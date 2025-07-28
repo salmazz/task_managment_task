@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Task extends Model
 {
-    Use HasFactory , SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -27,10 +27,5 @@ class Task extends Model
     public function dependencies()
     {
         return $this->belongsToMany(Task::class, 'task_dependencies', 'task_id', 'dependency_task_id');
-    }
-
-    public function dependents()
-    {
-        return $this->belongsToMany(Task::class, 'task_dependencies', 'dependency_task_id', 'task_id');
     }
 }

@@ -16,6 +16,10 @@
 ## Postman
 You can import and test the API using the following [Postman Collection](docs/task_managment.postman_collection.json).
 
+
+## Test Cases 
+
+To run test cases use `php artisan test`
 ---
 
 ## 🧾 : API Documentation (Postman-style)

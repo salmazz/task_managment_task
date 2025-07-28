@@ -24,14 +24,4 @@ class TaskPolicy
     {
         return $user->isManager();
     }
-
-    public function updateStatus(User $user, Task $task): bool
-    {
-        return $task->assigned_to === $user->id;
-    }
-
-    public function addDependencies(User $user, Task $task): bool
-    {
-        return $user->isManager();
-    }
 }

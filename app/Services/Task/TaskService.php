@@ -6,13 +6,12 @@ use App\Enums\TaskStatus;
 use App\Events\TaskCompleted;
 use App\Models\Task;
 use App\Models\User;
-use App\Repositories\Contracts\TaskRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 class TaskService
 {
-    public function __construct(protected TaskRepositoryInterface $taskRepo) {}
+    public function __construct() {}
 
     public function listWithFilters(array $filters,User $user)
     {
@@ -69,9 +68,11 @@ class TaskService
     {
         $user = Auth::user();
 
-        if ($user->isManager()) {
-            // Check dependency status if status is 'completed'
-            if (isset($data['status']) && $data['status'] === TaskStatus::Completed) {
+        $isManager = $user->isManager();
+        $isAssignee = $user->id === $task->assignee_id;
+
+        if ($isManager) {
+            if (isset($data['status']) && $data['status'] === TaskStatus::Completed->value) {
                 $this->ensureDependenciesCompleted($task);
             }
 
@@ -83,31 +84,38 @@ class TaskService
                 'status'      => $data['status'] ?? $task->status,
             ]);
 
-        } elseif ($user->id === $task->assignee_id && isset($data['status'])) {
-            if ($data['status'] === TaskStatus::Completed) {
+
+            if ($task->status === TaskStatus::Completed->value) {
+                event(new TaskCompleted($task));
+            }
+
+            return $task;
+        }
+
+        if ($isAssignee && isset($data['status'])) {
+            if ($data['status'] === TaskStatus::Completed->value) {
                 $this->ensureDependenciesCompleted($task);
             }
 
             $task->status = $data['status'];
             $task->save();
 
-            if ($task->status === TaskStatus::Completed) {
+            if ($task->status === TaskStatus::Completed->value) {
                 event(new TaskCompleted($task));
             }
 
-        } else {
-            throw ValidationException::withMessages([
-                'unauthorized' => 'You are not authorized to update this task.',
-            ]);
+            return $task;
         }
 
-        return $task;
+        throw ValidationException::withMessages([
+            'unauthorized' => 'You are not authorized to update this task.',
+        ]);
     }
 
     protected function ensureDependenciesCompleted(Task $task): void
     {
         $incompleteDeps = $task->dependencies()
-            ->where('status', '!=', TaskStatus::Completed)
+            ->where('tasks.status', '!=', TaskStatus::Completed->value)
             ->count();
 
         if ($incompleteDeps > 0) {
