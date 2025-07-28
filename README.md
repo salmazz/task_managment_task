@@ -157,3 +157,12 @@ task_dependencies
 * 🧠 Business Logic in `TaskService` — cleanly separated from controller.
 
 ---
+
+## 🔮 Future Enhancements
+The following features are not yet implemented but can be considered for future versions:
+
+- [ ] Email & push notifications on task status changes.
+- [ ] Comments & file attachments per task.
+- [ ] Advanced task filtering (by priority, keyword, etc.).
+- [ ] Dashboard with statistics and analytics.
+- [ ] Activity logging and change history per task.
